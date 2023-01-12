@@ -14,21 +14,67 @@ P_WIDTH = 20
 P_HEIGHT = 20
 P_COLOR = (255,0,0)
 Player = pygame.Rect(WIDTH/2 - P_WIDTH/2, HEIGHT/2 - P_HEIGHT/2 ,P_WIDTH, P_HEIGHT) # Sets Rectangle in the middle of the screen
-VEL = 3
+MAX_VEL = 3 # Maximum velocity
+SLIDE = 0.025  # Is the deceleration while sliding the square
+ACCEL = 0.1 # Is the acceleration of the square
+
+speed = [0,0] # X speed, Y speed
 
 FPS = 120
 clock = pygame.time.Clock()
 
-# Handling movement of the Player
-def handle_movements(pressed):
+# Handling everything about speeeeeeeeed!
+def update_player_velocity(pressed):
+    # Handling acceleration
     if pressed[pygame.K_w]:
-        Player.y -= VEL
+        if speed[1] > -MAX_VEL:
+            if speed[1] - ACCEL >= -MAX_VEL:
+                speed[1] -= ACCEL
+            else:
+                speed[1] = -MAX_VEL
     if pressed[pygame.K_s]:
-        Player.y += VEL
+        if speed[1] < MAX_VEL:
+            if speed[1] + ACCEL <= MAX_VEL:
+                speed[1] += ACCEL
+            else:
+                speed[1] = MAX_VEL
     if pressed[pygame.K_a]:
-        Player.x -= VEL
+        if speed[0] > -MAX_VEL:
+            speed[0] -= ACCEL
     if pressed[pygame.K_d]:
-        Player.x += VEL
+        if speed[0] < MAX_VEL:
+            speed[0] += ACCEL
+    # Handling deceleration
+     
+    if not (pressed[pygame.K_w] or pressed[pygame.K_s]):
+        if speed[1] != 0:
+            if speed[1] > 0:
+                if speed[1] - SLIDE >= 0:
+                    speed[1] -= SLIDE
+                else:
+                    speed[1] = 0
+            elif speed[1] < 0:
+                if speed[1] + SLIDE <= 0:
+                    speed[1] += SLIDE
+                else:
+                    speed[1] = 0   
+    if not (pressed[pygame.K_a] or pressed[pygame.K_d]):
+            if speed[0] > 0:
+                if speed[0] - SLIDE >= 0:
+                    speed[0] -= SLIDE
+                else:
+                    speed[0] = 0
+            elif speed[0] < 0:
+                if speed[0] + SLIDE <= 0:
+                    speed[0] += SLIDE
+                else:
+                    speed[0] = 0  
+
+    print(speed)    
+    
+
+
+            
     
     
     
@@ -43,7 +89,7 @@ def main():
 
         # Handle user input
         pressed_keys = pygame.key.get_pressed()
-        handle_movements(pressed_keys)
+        update_player_velocity(pressed_keys)
         # Update game objects and variables
         # ...
 

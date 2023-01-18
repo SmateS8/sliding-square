@@ -10,98 +10,51 @@ pygame.display.set_caption("Sliding Square!")
 
 
 # Initialize game objects and variables
-P_WIDTH = 20
-P_HEIGHT = 20
-P_COLOR = (255,0,0)
-Player = pygame.Rect(WIDTH/2 - P_WIDTH/2, HEIGHT/2 - P_HEIGHT/2 ,P_WIDTH, P_HEIGHT) # Sets Rectangle in the middle of the screen
+P_WIDTH = 50
+P_HEIGHT = 80
 MAX_VEL = 3 # Maximum velocity
 SLIDE = 0.05  # Is the deceleration while sliding the square
 ACCEL = 0.2 # Is the acceleration of the square
-
+ROTATION_SPEED = 2 # Speed of the rotation in degrees
 speed = [0,0] # X speed, Y speed
 
 FPS = 120
 clock = pygame.time.Clock()
 
-# Handling everything about speeeeeeeeed!
-def update_player_velocity(pressed):
-    # Handling acceleration
-    if pressed[pygame.K_w]:
-        if speed[1] > -MAX_VEL:
-            if speed[1] - ACCEL >= -MAX_VEL:
-                speed[1] -= ACCEL
-            else:
-                speed[1] = -MAX_VEL
-    if pressed[pygame.K_s]:
-        if speed[1] < MAX_VEL:
-            if speed[1] + ACCEL <= MAX_VEL:
-                speed[1] += ACCEL
-            else:
-                speed[1] = MAX_VEL
-    if pressed[pygame.K_a]:
-        if speed[0] > -MAX_VEL:
-            speed[0] -= ACCEL
-    if pressed[pygame.K_d]:
-        if speed[0] < MAX_VEL:
-            speed[0] += ACCEL
-    # Handling deceleration
-     
-    if not (pressed[pygame.K_w] or pressed[pygame.K_s]):
-        if speed[1] != 0:
-            if speed[1] > 0:
-                if speed[1] - SLIDE >= 0:
-                    speed[1] -= SLIDE
-                else:
-                    speed[1] = 0
-            elif speed[1] < 0:
-                if speed[1] + SLIDE <= 0:
-                    speed[1] += SLIDE
-                else:
-                    speed[1] = 0   
-    if not (pressed[pygame.K_a] or pressed[pygame.K_d]):
-            if speed[0] > 0:
-                if speed[0] - SLIDE >= 0:
-                    speed[0] -= SLIDE
-                else:
-                    speed[0] = 0
-            elif speed[0] < 0:
-                if speed[0] + SLIDE <= 0:
-                    speed[0] += SLIDE
-                else:
-                    speed[0] = 0  
 
-# Handles the actual square movement
-def move_player(speed):
-    global WIDTH, HEIGHT
-    #handle x axis
-    if speed[0] > 0:
-        if Player.x + speed[0] <= WIDTH - P_WIDTH:
-            Player.x +=speed[0]
-        else:
-            Player.x = WIDTH - P_WIDTH
-    if speed[0] < 0:
-        if Player.x + speed[0] >= 0:  #* Speed can be negative, that is why there is plus, not minus
-            Player.x +=speed[0]
-        else:
-            Player.x = 0
-    # handle y axis
+class drift_car(pygame.sprite.Sprite):
+    def __init__(self,x,y,width,height,max_vel,accel,drag,rotation_speed,):
+        super().__init__()
+        self.original_car = pygame.image.load("car.png")
+        self.original_car = pygame.transform.scale(self.original_car, (width, height))
+        self.car = self.original_car
+        self.x = x
+        self.y = y
 
-    if speed[1] > 0:
-        if Player.y + speed[1] <= HEIGHT - P_HEIGHT:
-            Player.y +=speed[1]
-        else:
-            Player.y = HEIGHT - P_HEIGHT
-    if speed[1] < 0:
-        if Player.y + speed[1] >= 0:  #* Speed can be negative, that is why there is plus, not minus
-            Player.y +=speed[1]
-        else:
-            Player.y = 0
+        self.max_vel = max_vel
+        self.accel = accel
+        self.drag = drag
+        self.rot_speed = rotation_speed
+        self.rot = 0
+        self.speed = [0,0]
 
-    
+        
+    def rotate(self, pressed):
+        if pressed[pygame.K_a]:
+            pass
+
+    def do_movement(self,pressed):
+        pass
 
 
+    def update(self):
+        WIN.blit(self.car, (self.x, self.y))
+
+
+car = drift_car(100,100,P_WIDTH,P_HEIGHT,MAX_VEL,ACCEL,SLIDE,ROTATION_SPEED)
             
-    
+car_group = pygame.sprite.Group()
+car_group.add(car)    
     
     
 # Main game loop
@@ -115,16 +68,12 @@ def main():
 
         # Handle user input
         pressed_keys = pygame.key.get_pressed()
-        update_player_velocity(pressed_keys)
-        # Update game objects and variables
-        # ...
+
+
 
         # Draw the screen
-        speed[0] = round(speed[0],2)
-        speed[1] = round(speed[1],2)
-        move_player(speed)
         WIN.fill((0, 0, 0))
-        pygame.draw.rect(WIN, P_COLOR, Player)
+        
         pygame.display.flip()
 
     # Clean up

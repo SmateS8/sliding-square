@@ -1,24 +1,22 @@
 import pygame
-# Using 'Better Comments' extension in VS Code
 # Initialize Pygame
 pygame.init()
 
 # Set up the screen
-WIDTH, HEIGHT = 640, 480
+WIDTH, HEIGHT = 800, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Sliding Square!")
+pygame.display.set_caption("No traction?")
 
 
-# Initialize game objects and variables
+# Initialize STATIC variables
 P_WIDTH = 50
 P_HEIGHT = 80
 MAX_VEL = 3 # Maximum velocity
 SLIDE = 0.05  # Is the deceleration while sliding the square
 ACCEL = 0.2 # Is the acceleration of the square
 ROTATION_SPEED = 2 # Speed of the rotation in degrees
-speed = [0,0] # X speed, Y speed
 
-FPS = 120
+FPS = 15
 clock = pygame.time.Clock()
 
 
@@ -27,9 +25,11 @@ class drift_car(pygame.sprite.Sprite):
         super().__init__()
         self.original_car = pygame.image.load("car.png")
         self.original_car = pygame.transform.scale(self.original_car, (width, height))
-        self.car = self.original_car
-        self.x = x
-        self.y = y
+        self.image = self.original_car
+        self.rect = self.image.get_rect()
+        self.prev_rect = self.rect
+        self.rect.x = x
+        self.rect.y = y
 
         self.max_vel = max_vel
         self.accel = accel
@@ -38,7 +38,7 @@ class drift_car(pygame.sprite.Sprite):
         self.rot = 0
         self.speed = [0,0]
 
-        
+
     def rotate(self, pressed):
         if pressed[pygame.K_a]:
             pass
@@ -48,7 +48,13 @@ class drift_car(pygame.sprite.Sprite):
 
 
     def update(self):
-        WIN.blit(self.car, (self.x, self.y))
+        if self.rot > 359:
+            self.rot -= 360
+        self.image = pygame.transform.rotozoom(self.original_car, self.rot, 1)
+        self.prev_rect = self.rect
+        self.rect = self.image.get_rect()
+        self.rect.center = self.prev_rect.center
+        self.rot += 1
 
 
 car = drift_car(100,100,P_WIDTH,P_HEIGHT,MAX_VEL,ACCEL,SLIDE,ROTATION_SPEED)
@@ -73,7 +79,9 @@ def main():
 
         # Draw the screen
         WIN.fill((0, 0, 0))
-        
+        pygame.draw.rect(WIN,(255,255,255),car.rect)
+        car_group.update()
+        car_group.draw(WIN)
         pygame.display.flip()
 
     # Clean up

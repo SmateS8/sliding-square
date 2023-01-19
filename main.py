@@ -1,4 +1,6 @@
 import pygame
+#Sometimes I use BetterComments extension in VS code, that explains why some of my comments start with random symbols
+
 # Initialize Pygame
 pygame.init()
 
@@ -7,7 +9,7 @@ WIDTH, HEIGHT = 800, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("No traction?")
 
-
+# ! All the settings is made for 120 FPS, different FPS will influence the physics od the game (speed, rotation, etc.)
 # Initialize STATIC variables
 P_WIDTH = 50
 P_HEIGHT = 80
@@ -16,7 +18,7 @@ SLIDE = 0.05  # Is the deceleration while sliding the square
 ACCEL = 0.2 # Is the acceleration of the square
 ROTATION_SPEED = 2 # Speed of the rotation in degrees
 
-FPS = 15
+FPS = 120
 clock = pygame.time.Clock()
 
 
@@ -35,26 +37,48 @@ class drift_car(pygame.sprite.Sprite):
         self.accel = accel
         self.drag = drag
         self.rot_speed = rotation_speed
-        self.rot = 0
+        self.rot = 0 # 0 degrees is car facing down.
         self.speed = [0,0]
+        self.direction = [0,-1] # -1 to 1, depends on direction. Absolute x + y = 1. Default 0 degrees --> x = 0 ; y = -1
 
 
-    def rotate(self, pressed):
-        if pressed[pygame.K_a]:
-            pass
+    def handle_rot_keys(self, pressed):
+        if pressed[pygame.K_a]: # Handling rotation
+            self.rot += self.rot_speed
+        if pressed[pygame.K_d]:
+            self.rot -= self.rot_speed
+        if self.rot > 359:
+                self.rot -= 360
+        elif self.rot < 0:
+                self.rot +=360 # End of rotation 
+        
 
-    def do_movement(self,pressed):
-        pass
+        #Angle to direction algorith: y direction first
+        if self.rot//90 == 0:
+            self.direction[1] = 90 - self.rot%90 # Using the variable for proxy calculations
+            self.direction[1] = round(self.direction[1]/90,2)
+        elif self.rot//90 == 3:
+            self.direction[1] = round((self.rot%90)/90,2)
+        if self.rot//90 == 1:
+            self.direction[1] = round((self.rot%90)/90,2)
+            self.direction[1] = -self.direction[1]
+        elif self.rot//90 == 2:
+            self.direction[1] = 90 - self.rot%90 # Using the variable for proxy calculations
+            self.direction[1] = round(self.direction[1]/90,2) 
+            self.direction[1] = -self.direction[1]
+        # *Now be basicly now the x, just need to figure out if it is minus or plus
+        self.direction[0] = round(1 - abs(self.direction[1]),2)
+        if 180 <= self.rot <= 359:
+            self.direction[0] *= -1        
+
+
 
 
     def update(self):
-        if self.rot > 359:
-            self.rot -= 360
         self.image = pygame.transform.rotozoom(self.original_car, self.rot, 1)
         self.prev_rect = self.rect
         self.rect = self.image.get_rect()
         self.rect.center = self.prev_rect.center
-        self.rot += 1
 
 
 car = drift_car(100,100,P_WIDTH,P_HEIGHT,MAX_VEL,ACCEL,SLIDE,ROTATION_SPEED)
@@ -74,8 +98,8 @@ def main():
 
         # Handle user input
         pressed_keys = pygame.key.get_pressed()
-
-
+        car.handle_rot_keys(pressed_keys)
+        print(car.direction[0], "   ", car.direction[1])
 
         # Draw the screen
         WIN.fill((0, 0, 0))

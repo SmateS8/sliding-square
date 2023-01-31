@@ -1,4 +1,5 @@
 import pygame
+import math
 #Sometimes I use BetterComments extension in VS code, that explains why some of my comments start with random symbols
 
 # Initialize Pygame
@@ -32,17 +33,21 @@ class drift_car(pygame.sprite.Sprite):
         self.prev_rect = self.rect
         self.rect.x = x
         self.rect.y = y
+        self.precise_x = x
+        self.precise_y = y
+
 
         self.max_vel = max_vel
+        self.max_squared = max_vel**2
         self.accel = accel
         self.drag = drag
         self.rot_speed = rotation_speed
-        self.rot = 0 # 0 degrees is car facing down.
+        self.rot = 45 # 0 degrees is car facing down.
         self.speed = [0,0]
         self.direction = [0,-1] # -1 to 1, depends on direction. Absolute x + y = 1. Default 0 degrees --> x = 0 ; y = -1
 
 
-    def handle_rot_keys(self, pressed):
+    def handle_rotation(self, pressed):
         if pressed[pygame.K_a]: # Handling rotation
             self.rot += self.rot_speed
         if pressed[pygame.K_d]:
@@ -73,12 +78,41 @@ class drift_car(pygame.sprite.Sprite):
 
 
 
+    def handle_forward(self, pressed): #! Something gone wrong. When directions are equaly speeds should be equal too, but they are not
+        if pressed[pygame.K_w]:
+            #X direction first
+            self.speed[0] = self.max_squared * self.direction[0] #Using it as a proxy variable
+            if self.speed[0] < 0:
+                self.speed[0] = math.sqrt(self.speed[0] * (-1))
+                self.speed[0] *= (-1)
+            else:
+               self.speed[0] = math.sqrt(self.speed[0])
+            #Y direction second           
+            self.speed[1] = self.max_vel - abs(self.speed[0])
+            if self.direction[1] < 0:
+                self.speed[1] *= (-1)
+            #Y direction second
+            #self.speed[1] = self.max_squared * self.direction[1] #Using it as a proxy variable
+            #if self.speed[1] < 0:
+            #    self.speed[1] = math.sqrt(self.speed[1] * (-1))
+            #    self.speed[1] *= (-1)
+            #else:
+            #    self.speed[1] = math.sqrt(self.speed[1])
+        else:
+            self.speed = [0,0]
+
 
     def update(self):
+        #Rotating the image
         self.image = pygame.transform.rotozoom(self.original_car, self.rot, 1)
         self.prev_rect = self.rect
         self.rect = self.image.get_rect()
         self.rect.center = self.prev_rect.center
+        #Moving the image
+        self.precise_x += self.speed[0]
+        self.precise_y += self.speed[1]
+        self.rect.centerx = int(self.precise_x)
+        self.rect.centery = int(self.precise_y)
 
 
 car = drift_car(100,100,P_WIDTH,P_HEIGHT,MAX_VEL,ACCEL,SLIDE,ROTATION_SPEED)
@@ -98,8 +132,9 @@ def main():
 
         # Handle user input
         pressed_keys = pygame.key.get_pressed()
-        car.handle_rot_keys(pressed_keys)
-        print(car.direction[0], "   ", car.direction[1])
+        car.handle_rotation(pressed_keys)
+        car.handle_forward(pressed_keys)
+
 
         # Draw the screen
         WIN.fill((0, 0, 0))

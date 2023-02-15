@@ -78,7 +78,7 @@ class drift_car(pygame.sprite.Sprite):
 
 
 
-    def handle_forward(self, pressed): #! Something gone wrong. When directions are equaly speeds should be equal too, but they are not
+    def handle_forward(self, pressed):
         if pressed[pygame.K_w]:
             #X direction first
             self.speed[0] = self.max_squared * self.direction[0] #Using it as a proxy variable
@@ -87,17 +87,13 @@ class drift_car(pygame.sprite.Sprite):
                 self.speed[0] *= (-1)
             else:
                self.speed[0] = math.sqrt(self.speed[0])
-            #Y direction second           
-            self.speed[1] = self.max_vel - abs(self.speed[0])
-            if self.direction[1] < 0:
+            #Y direction second   
+            self.speed[1] = self.max_squared * self.direction[1] #Using it as a proxy variable
+            if self.speed[1] < 0:
+                self.speed[1] = math.sqrt(self.speed[1] * (-1))
                 self.speed[1] *= (-1)
-            #Y direction second
-            #self.speed[1] = self.max_squared * self.direction[1] #Using it as a proxy variable
-            #if self.speed[1] < 0:
-            #    self.speed[1] = math.sqrt(self.speed[1] * (-1))
-            #    self.speed[1] *= (-1)
-            #else:
-            #    self.speed[1] = math.sqrt(self.speed[1])
+            else:
+                self.speed[1] = math.sqrt(self.speed[1])        
         else:
             self.speed = [0,0]
 
